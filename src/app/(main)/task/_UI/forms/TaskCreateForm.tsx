@@ -1,93 +1,51 @@
 "use client";
-import GenericTokenEdit from "@/app/(main)/task/_UI/components/TokenEdit";
 import ButtonComponent from "@/app/(main)/task/_UI/components/Button";
 import {useGetHolidays} from "@/app/(main)/_UI/hooks/useGetHolidays"
-import React, { useState, useEffect } from "react";
-import { Form, Input, DatePicker, message } from "antd";
-import GenericSelect from "@/app/(main)/task/_UI/components/Select";
+import React, { useState } from "react";
+import {Form, Input, DatePicker, message, Popover} from "antd";
 const {TextArea} = Input;
-import { Priority, Status ,User} from "../../_lib/definitions";
+
+import SelectEdit from "@/app/(main)/task/_UI/components/SimplifiedGenericTextEdit";
+
+import {HolidayComponent} from "@/app/(main)/_UI/components/Holiday";
+import {fetchTaskPriorities, fetchTaskStatuses, fetchUsers} from "@/app/(main)/task/_lib/dataFetchers";
+import {useTaskAPI} from "@/app/(main)/_UI/hooks/useTaskAPI";
+import {TaskPostData} from "@/app/(main)/task/_lib/definitions";
 
 
-export const TaskCreateForm = () => {
+
+const re = () => {
+
+}
+
+export const TaskCreateForm = ({refetchData = re}: {refetchData: any} ) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    // Simulating fetching initial data (e.g., from an API)
-    const fetchInitialData = async () => {
-      try {
-        setLoading(true);
-
-        // Simulating an asynchronous operation (e.g., fetching initial data from a server)
-        const initialData = await new Promise((resolve) => {
-          setTimeout(() => {
-            resolve({
-              task_name: "Initial Task",
-              task_description: "This is a task description",
-              task_staus:1,
-              task_priority:1,
-            });
-          }, 1000);
-        });
-
-        // Set initial values in the form
-        form.setFieldsValue(initialData);
-      } catch (error) {
-        console.error("Error fetching initial data:", error);
-        message.error(
-          "An error occurred while fetching initial data. Please try again."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Call the function to fetch initial data
-    fetchInitialData();
-  }, [form]);
+  const {createAndAssignTask}=useTaskAPI()
   const onFinish = async (formData: any) => {
     try {
       setLoading(true);
 
-      // Simulating an error for demonstration purposes
-      if (formData.task_name === "invalid") {
-        message.error("Invalid task name. Please enter a valid name.");
-        return;
-      }
       console.log(formData);
-      // Actual form submission logic
-      try {
-        const response = await fetch("/api/createTask", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ data: formData }),
-        });
 
-        const data = await response.json();
-
-        if (response.ok) {
-          message.success("Form submitted successfully!");
-          if (data.success === true) {
-            message.success("Tasks created and assigned successfully");
-          } else {
-            message.warning("An error occurred. Please try again.");
-          }
+      const response = await createAndAssignTask(formData);
+      console.log(response)
+      if (response) {
+        message.success("Form submitted successfully!");
+        if (response === "201") {
+          message.success("Tasks created and assigned successfully");
         } else {
-          console.error("Error creating task:", data.error);
           message.warning("An error occurred. Please try again.");
         }
-      } catch (error) {
-        console.error("Error creating task:", error);
+      } else {
+        console.error("Error creating task ");
+        message.warning("An error occurred. Please try again.");
       }
     } catch (error) {
-      console.error("Error submitting form:", error);
-      message.error(
-        "An error occurred while submitting the form. Please try again."
-      );
+      console.error("Error creating task :", error);
     } finally {
+      refetchData();
       setLoading(false);
     }
   };
@@ -96,18 +54,24 @@ export const TaskCreateForm = () => {
     form.resetFields();
   };
 
-  const [startDate,setStartDate] = useState<String>('12');
-  const [endDate,setEndDate] = useState<String>('12');
+  const [startDate,setStartDate] = useState<string>('12');
+  const [endDate,setEndDate] = useState<string>('12');
   const holidays = useGetHolidays(startDate,endDate);
   return (
-    <div className="  p-1 bg-white shadow-md rounded-md w-fit  dark:bg-black dark:text-white dark:border-[1px]">
-      <div className="bg-gray-200 rounded-md mb-1  dark:bg-white dark:text-black">
-        <p className=" text-2xl">TaskDetails</p>
-      </div>
-
-      <Form form={form} onFinish={onFinish} className="m-auto dark:text-white">
-        <table className="mt-3 mb-1 dark:text-white">
+      <Form form={form} onFinish={onFinish} className="m-auto dark:text-white w-full">
+        <table className=" mb-1 dark:text-white w-full">
           <tbody>
+          {
+              <tr>
+                <td colSpan={4}>
+                  <div className="flex flex-row float-right">
+                    <Popover content={<HolidayComponent holidays={holidays}/>}>
+                     <a> <p className="mt-1 text-blue-300">There {holidays.length===1?'is':'are'} {holidays.length} {holidays.length===1?'Holiday':'Holidays'}</p></a>
+                    </Popover>
+                  </div>
+                </td>
+              </tr>
+          }
             <tr>
               <td className="flex float-right  items-center justify-center mt-1 ">
                 <label className=" align-middle text-sm font-medium ">
@@ -115,9 +79,9 @@ export const TaskCreateForm = () => {
                 </label>
               </td>
 
-              <td>
-                <Form.Item name="start_date" className="mb-0">
-                  <DatePicker style={{ width: "100%" }} onChange={(date,value)=>(setStartDate(value.split('-')[1]))} />
+              <td className="w-full">
+                <Form.Item name="taskStartDate" className="mb-0">
+                  <DatePicker className="w-full" format="dddd,MMMM YYYY hh:mm a" onChange={(date,value)=>(setStartDate(value.split('-')[1]))} />
                 </Form.Item>
               </td>
               <td className="flex float-right items-center justify-center">
@@ -125,36 +89,11 @@ export const TaskCreateForm = () => {
                 <label className="block text-sm font-medium">Ends:</label>
               </td>
               <td>
-                <Form.Item name="end_date" className="mb-0">
-                  <DatePicker style={{ width: "100%" }} onChange={(value,date)=>{setEndDate(date)}} />
+                <Form.Item name="taskEndDate" className="mb-0 w-full">
+                  <DatePicker className="w-full" format="dddd,MMMM YYYY" onChange={(value,date)=>{setEndDate(date)}} />
                 </Form.Item>
               </td>
             </tr>
-              <tr>
-
-                <td colSpan={4}>
-                  {holidays.length > 0 && (
-                      <div className="p-1 rounded-md  bg-white justify-center  w-fit m-auto">
-                        {/*<h4 className="text-blue-500 text-sm">Holidays within Task Timeframe</h4>*/}
-                        <table className="table">
-                          <tbody>
-                          <tr>
-                            <th className="m-1 text-sm">Holiday</th>
-                            <th className="m-1 text-sm">Date</th>
-                          </tr>
-                          {holidays.map((holiday:any,key:number) => (
-                              <tr key={key} className="table-row">
-                                <td className="text-sm table-cell" >{holiday.name}</td>
-                                <td className="text-sm table-cell" >{holiday.date}</td>
-                              </tr>
-                          ))}
-                          </tbody>
-
-                        </table>
-                      </div>
-                  )}
-                </td>
-              </tr>
             <tr>
               <td className="flex float-right  items-center justify-center mt-2 ">
                 <label htmlFor="taskName" className="block text-sm font-medium">
@@ -163,7 +102,7 @@ export const TaskCreateForm = () => {
               </td>
               <td colSpan={3}>
                 <Form.Item
-                  name="task_name"
+                  name="taskName"
                   className="mb-0"
                   rules={[
                     {
@@ -184,7 +123,7 @@ export const TaskCreateForm = () => {
               </td>
               <td colSpan={3}>
                 <Form.Item
-                  name="assigned_by"
+                  name="assignedBy"
                   className="mb-0"
                   rules={[
                     {
@@ -193,17 +132,17 @@ export const TaskCreateForm = () => {
                     },
                   ]}
                 >
-                   <GenericTokenEdit<User> 
-                  placeholder="" 
-                  endpoint="http://localhost:8000/api/user/users/" 
-                    dataAlias="taskStatuses"
-                    token={null}
-                    onChange={(value) => console.log(value)}
-                    name="task_status"
-                    selectText="Select Assigner..."
-                    idKey="id"
-                    textKey="first_name" 
-                    otherKey="last_name"/>
+                  {/*<DebounceSelect<UserValue>*/}
+                  {/*    mode="multiple"*/}
+                  {/*    value={value}*/}
+                  {/*    placeholder="Select users"*/}
+                  {/*    fetchOptions={fetchUsers}*/}
+                  {/*    onChange={(newValue) => {*/}
+                  {/*      setValue(newValue as UserValue[]);*/}
+                  {/*    }}*/}
+                  {/*    style={{ width: '100%' }}*/}
+                  {/*/>*/}
+                  <SelectEdit mode="single"  placeholder="Select assigner" fetchOptions={fetchUsers}/>
                 </Form.Item>
               </td>
             </tr>
@@ -215,7 +154,7 @@ export const TaskCreateForm = () => {
               </td>
               <td colSpan={4}>
                 <Form.Item
-                  name="assigned_to"
+                  name="assignedTo"
                   className="mb-0"
                   rules={[
                     {
@@ -224,17 +163,7 @@ export const TaskCreateForm = () => {
                     },
                   ]}
                 >
-                  <GenericTokenEdit<User>
-                  placeholder="" 
-                  endpoint="http://localhost:8000/api/user/users/" 
-                    dataAlias="taskStatuses"
-                    token={null}
-                    onChange={(value) => console.log(value)}
-                    name="task_status"
-                    selectText="Select Assignee(s)..."
-                    idKey="id"
-                    textKey="first_name" 
-                    otherKey="last_name"/>
+                  <SelectEdit mode="multiple" placeholder="Select assignee(s)" fetchOptions={fetchUsers}/>
                 </Form.Item>
               </td>
             </tr>
@@ -246,7 +175,7 @@ export const TaskCreateForm = () => {
               </td>
               <td>
                 <Form.Item
-                  name="task_status"
+                  name="taskStatusId"
                   className="mb-0"
                   rules={[
                     {
@@ -255,17 +184,7 @@ export const TaskCreateForm = () => {
                     },
                   ]}
                 >
-                  <GenericSelect<Status>
-                    placeholder="Select task status..."
-                    endpoint="http://localhost:8000/api/user/task-status/"
-                    dataAlias="taskStatuses"
-                    token={null}
-                    onChange={(value) => console.log(value)}
-                    name="task_status"
-                    selectText="Select task status..."
-                    idKey="statusId"
-                    textKey="statusName"
-                  />
+                  <SelectEdit placeholder="Select Status" fetchOptions={fetchTaskStatuses}/>
                 </Form.Item>
               </td>
               <td className="flex float-right  items-center justify-center mt-1 ">
@@ -275,7 +194,7 @@ export const TaskCreateForm = () => {
               </td>
               <td>
                 <Form.Item
-                  name="task_priority"
+                  name="taskPriorityId"
                   className="mb-0"
                   rules={[
                     {
@@ -284,24 +203,13 @@ export const TaskCreateForm = () => {
                     },
                   ]}
                 >
-                  <GenericSelect<Priority>
-                    placeholder="Select task priority"
-                    endpoint="http://localhost:8000/api/user/task-priority/"
-                    dataAlias="taskPriorities"
-                    token={null}
-                    onChange={(value) => console.log(value)}
-                    name="task_priority"
-                    selectText="Select task priority..."
-                    idKey="priorityId"
-                    textKey="priorityName"
-                  />
-                  {/* <Select options={[{label:"Kirk",value:"kirk"},{label:"bernard",value:"bernard"}]} mode="multiple"  optionLabelProp="label"/> */}
+                  <SelectEdit  placeholder="Select Priority" fetchOptions={fetchTaskPriorities}/>
+
                 </Form.Item>
               </td>
             </tr>
             <tr>
               <td className="flex float-right mt-2">
-                {" "}
                 <label
                   htmlFor="taskDescription"
                   className="block items-center justify-center  text-sm font-medium"
@@ -311,7 +219,7 @@ export const TaskCreateForm = () => {
               </td>
               <td colSpan={4}>
                 <Form.Item
-                  name="task_description"
+                  name="taskDescription"
                   className="mb-0"
                   rules={[
                     {
@@ -322,8 +230,8 @@ export const TaskCreateForm = () => {
                 >
                   <TextArea
                     rows={5}
-                    cols={60}
-                    className="mt-1 p-1 w-full border rounded-md"
+                    cols={40}
+                    className="mt-1 p-1  border rounded-md"
                   />
                 </Form.Item>
               </td>
@@ -345,6 +253,5 @@ export const TaskCreateForm = () => {
           </tbody>
         </table>
       </Form>
-    </div>
   );
 };

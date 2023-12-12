@@ -1,7 +1,7 @@
 
 
 import Link from "next/link";
-import React, { useState } from "react";
+import React from "react";
 import { usePathname } from "next/navigation";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 // Icons
@@ -20,6 +20,7 @@ import { HiOutlineArrowRightCircle } from "react-icons/hi2";
 import { IoSettingsOutline, IoSettingsSharp } from "react-icons/io5";
 import { BsGrid ,BsFillGridFill} from "react-icons/bs";
 import {cn} from "@/app/(main)/_UI/lib/utils";
+import {Tooltip} from "antd";
 
 
 
@@ -91,74 +92,79 @@ const sidebarItems: SideNavItemType[] = [
   },
 ];
 
-export default function Sidebar({isOpen:isSidebarOpen,setIsOpen:setSidebarOpen}: Props) {
-  // const [isSidebarOpen, setSidebarOpen] = useState(true);
-
+/**
+ * Renders the sidebar component.
+ *
+ * @param {Object} props - The component props.
+ * @param {boolean} props.isOpen - Whether the sidebar is open or closed.
+ * @param {Function} props.setIsOpen - The function to set the sidebar open or closed.
+ * @returns {JSX.Element} The rendered sidebar component.
+ */
+export default function Sidebar({isOpen: isSidebarOpen, setIsOpen: setSidebarOpen}: Props) {
   return (
-    <>
-    <div
-      className={cn(
-        "min-h-screen fixed max-h-screen overflow-y-auto md:pr-8 pr-3 pt-2 flex flex-col gap-3 border-r-[1px] pl-[50px] shadow-lg  bg-white p-4 dark:bg-black rounded-lg",
-        !isSidebarOpen && "md:[150px]"
-      )}
-    >
-      {/* logo */}
-      <div className="flex flex-row">
-        <HoverContainer>
-          <Link href={"/"}>
-            <BiLogoDigitalocean className="text-5xl" />
-          </Link>
-        </HoverContainer>
-        {isSidebarOpen && (
-          <p
+      <>
+        <div
             className={cn(
-              "text-xl hidden md:block pr-4 transition-all mt-5",
-              isSidebarOpen && "font-bold"
+                "min-h-screen fixed max-h-screen overflow-y-auto md:pr-6 pr-2 pt-2 flex flex-col gap-2 border-r-[1px] pl-[50px] shadow-lg  bg-white p-4 dark:bg-black rounded-lg",
+                !isSidebarOpen && "md:[135px]"
             )}
-          >
-            Navigation
-          </p>
-        )}
-      </div>
-     
-      {/* sidenavitems */}
-      {sidebarItems.map((sidebarItem, key) => {
-        return (
-          <HoverContainer key={key}>
-            <SideNavItem
-              key={key}
-              icon={{
-                icon: sidebarItem.icon.icon,
-                fillicon: sidebarItem.icon.fillicon,
-              }}
-              href={sidebarItem.href}
-              label={sidebarItem.label}
-              isSidebarOpen={isSidebarOpen}
-            />
-          </HoverContainer>
-        );
-      })}
+        >
+          {/* logo */}
+          <div className="flex flex-row mr-4">
+            <HoverContainer>
+              <Link href={"/"}>
+                <BiLogoDigitalocean className="text-3xl " />
+              </Link>
+            </HoverContainer>
+            {isSidebarOpen && (
+                <p
+                    className={cn(
+                        "text-2xl hidden md:block pr-2 transition-all mt-2",
+                        isSidebarOpen && "font-bold"
+                    )}
+                >
+                  Task Tribe
+                </p>
+            )}
+          </div>
 
-      {/* toggle button */}
-      <section
-        className={cn(
-          "flex w-full justify-end",
-          !isSidebarOpen && "justify-start"
-        )}
-      >
-        <HoverContainer>
-          <HiOutlineArrowRightCircle
-            onClick={() => setSidebarOpen(!isSidebarOpen)}
-            className={cn(
-              "text-4xl mt-2 text-gray-400 transition-all",
-              isSidebarOpen && "rotate-180 "
-            )}
-          />
-        </HoverContainer>
-      </section>
-    </div>
-    
-    </>
+          {/* sidenavitems */}
+          {sidebarItems.map((sidebarItem, key) => {
+            return (
+                <HoverContainer key={key}>
+                  <SideNavItem
+                      key={key}
+                      icon={{
+                        icon: sidebarItem.icon.icon,
+                        fillicon: sidebarItem.icon.fillicon,
+                      }}
+                      href={sidebarItem.href}
+                      label={sidebarItem.label}
+                      isSidebarOpen={isSidebarOpen}
+                  />
+                </HoverContainer>
+            );
+          })}
+
+          {/* toggle button */}
+          <section
+              className={cn(
+                  "flex w-fit justify-end",
+                  !isSidebarOpen && "justify-start"
+              )}
+          >
+            <HoverContainer>
+              <HiOutlineArrowRightCircle
+                  onClick={() => setSidebarOpen(!isSidebarOpen)}
+                  className={cn(
+                      "text-3xl mt-0 text-gray-400 transition-all",
+                      isSidebarOpen && "rotate-180 "
+                  )}
+              />
+            </HoverContainer>
+          </section>
+        </div>
+      </>
   );
 }
 
@@ -175,19 +181,20 @@ const SideNavItem = ({
     <Link ref={animationParent} href={href}>
       <div
         className={cn(
-          "flex gap-2 items-center cursor-pointer",
+          "flex gap-1 items-center cursor-pointer mb-0",
           !isSidebarOpen && "justify-start"
         )}
       >
         {/* Icon */}
-        <div className="w-[35px] h-[35px] text-3xl">
-          {isActive ? icon.fillicon : icon.icon}
+        <div className={cn("w-[16px] h-[16px] text-1xl",!isSidebarOpen && " align-middle justify-center")}>
+          {isSidebarOpen &&  (isActive ? icon.fillicon : icon.icon)}
+          {!isSidebarOpen && (<Tooltip title={label} placement="right">{isActive ? icon.fillicon : icon.icon}</Tooltip>)}
         </div>
         {/* label */}
         {isSidebarOpen && (
           <p
             className={cn(
-              "text-xl hidden md:block pr-4 transition-all",
+              "text-1xl hidden md:block pr-3 transition-all ",
               isActive && "font-bold"
             )}
           >
@@ -207,7 +214,7 @@ const HoverContainer = ({
   className?: string;
 }) => {
   return (
-    <div className="p-3 transition-all rounded-full cursor-pointer hover:bg-gray-200 w-fit dark:hover:bg-zinc-900 group:dark:bg-zinc-900 group-hover:dark:bg-zinc-900 group-hover:bg-gray-200">
+    <div className="p-2 transition-all rounded-full cursor-pointer hover:bg-gray-200 w-fit dark:hover:bg-zinc-900 group:dark:bg-zinc-900 group-hover:dark:bg-zinc-900 group-hover:bg-gray-200">
       {children}
     </div>
   );

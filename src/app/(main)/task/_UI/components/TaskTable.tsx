@@ -45,12 +45,15 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks }) => {
     };
 
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+
         console.log('selectedRowKeys changed: ', newSelectedRowKeys);
         setSelectedRowKeys(newSelectedRowKeys);
     };
     const rowSelection: TableRowSelection<Task> = {
         selectedRowKeys,
         onChange: onSelectChange,
+
+        // onSelect: (record:Task)=>{handleTaskClick(record.taskId.toString())},
         selections: [
             Table.SELECTION_ALL,
             Table.SELECTION_NONE,
