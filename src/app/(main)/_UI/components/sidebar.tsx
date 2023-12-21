@@ -44,7 +44,7 @@ const sidebarItems: SideNavItemType[] = [
   {
     icon: { icon: <HomeIcon />, fillicon: <HomeFillIcon /> },
     label: "Home",
-    href: "/task",
+    href: "/task/home",
     isSidebarOpen: true,
   },
   {
@@ -62,7 +62,7 @@ const sidebarItems: SideNavItemType[] = [
   {
     icon: { icon: <BsGrid />, fillicon: <BsFillGridFill /> },
     label: "Grid",
-    href: "/task/details",
+    href: "/task/all",
     isSidebarOpen: true,
   },
   {
@@ -104,22 +104,22 @@ export default function Sidebar({isOpen: isSidebarOpen, setIsOpen: setSidebarOpe
   return (
       <>
         <div
-            className={cn(
-                "min-h-screen fixed max-h-screen overflow-y-auto md:pr-6 pr-2 pt-2 flex flex-col gap-2 border-r-[1px] pl-[50px] shadow-lg  bg-white p-4 dark:bg-black rounded-lg",
-                !isSidebarOpen && "md:[135px]"
-            )}
+            // className={cn(
+            //     "min-h-screen fixed max-h-screen overflow-y-auto md:pr-6 pr-6 pt-2 flex flex-col gap-2 border-r-[1px] pl-[20px] shadow-lg  bg-white dark:bg-zinc-800 dark:bg-black rounded-lg",
+            //     !isSidebarOpen && "md:[135px]"
+            // )}
         >
           {/* logo */}
-          <div className="flex flex-row mr-4">
+          <div className="flex flex-row mb-0">
             <HoverContainer>
               <Link href={"/"}>
-                <BiLogoDigitalocean className="text-3xl " />
+                <BiLogoDigitalocean className="text-3xl" />
               </Link>
             </HoverContainer>
             {isSidebarOpen && (
                 <p
                     className={cn(
-                        "text-2xl hidden md:block pr-2 transition-all mt-2",
+                        " hidden text-2xl md:block  transition-all mt-2",
                         isSidebarOpen && "font-bold"
                     )}
                 >
@@ -157,7 +157,7 @@ export default function Sidebar({isOpen: isSidebarOpen, setIsOpen: setSidebarOpe
               <HiOutlineArrowRightCircle
                   onClick={() => setSidebarOpen(!isSidebarOpen)}
                   className={cn(
-                      "text-3xl mt-0 text-gray-400 transition-all",
+                      "text-black text-2xl transition-all",
                       isSidebarOpen && "rotate-180 "
                   )}
               />
@@ -181,12 +181,12 @@ const SideNavItem = ({
     <Link ref={animationParent} href={href}>
       <div
         className={cn(
-          "flex gap-1 items-center cursor-pointer mb-0",
+          "flex flex-row gap-1 items-center align-middle cursor-pointer",
           !isSidebarOpen && "justify-start"
         )}
       >
         {/* Icon */}
-        <div className={cn("w-[16px] h-[16px] text-1xl",!isSidebarOpen && " align-middle justify-center")}>
+        <div className={cn("text-2xl")}>
           {isSidebarOpen &&  (isActive ? icon.fillicon : icon.icon)}
           {!isSidebarOpen && (<Tooltip title={label} placement="right">{isActive ? icon.fillicon : icon.icon}</Tooltip>)}
         </div>
@@ -194,7 +194,7 @@ const SideNavItem = ({
         {isSidebarOpen && (
           <p
             className={cn(
-              "text-1xl hidden md:block pr-3 transition-all ",
+              "hidden md:block  transition-all ",
               isActive && "font-bold"
             )}
           >

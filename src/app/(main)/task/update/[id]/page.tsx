@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import TaskProgressUpdateForm from '../../_UI/forms/TaskProgressUpdateForm'
+import TaskProgressUpdateForm from '../../_UI/forms/xTaskProgressUpdateForm'
 import {useGetData} from "@/app/(main)/_UI/hooks/useGetData";
 import {Task} from "@/app/(main)/task/_lib/definitions";
 

@@ -32,7 +32,7 @@ export const fetchHolidays = async (startDate: string, endDate: string): Promise
  * @param dateString - The CustomDate object to convert.
  * @returns The string representation of the CustomDate object.
  */
-export function processDateString(dateString: CustomDate) {
+export function processDateString(dateString: CustomDate|any) {
     // Extract year, month, and day from the CustomDate object
     const year = dateString.$y;
     const month = dateString.$M + 1;

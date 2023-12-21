@@ -4,6 +4,7 @@ import type { ColumnsType } from 'antd/es/table';
 import {TableRowSelection} from "antd/es/table/interface";
 import Link from "next/link";
 import TaskDetailsModal from "@/app/(main)/task/_UI/components/TaskDetailsModal";
+import {TaskUpdate} from "@/app/(main)/task/_lib/definitions";
 
 export type Task = {
     key:React.Key;
@@ -26,12 +27,13 @@ export type Task = {
     taskSlug: string | null;
 }
 interface TaskTableProps {
-    tasks: Task[];
+    tasks: TaskUpdate[];
     yScroll:number;
     pageSize:number;
+    refetchData:any;
 }
 
-const TaskTable: React.FC<TaskTableProps> = ({ tasks,yScroll,pageSize }) => {
+const TaskTable: React.FC<TaskTableProps> = ({ tasks,yScroll,pageSize,refetchData }) => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedTaskId, setSelectedTaskId] = useState<string>(''); // Track the selected task ID
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
@@ -51,58 +53,17 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks,yScroll,pageSize }) => {
         console.log('selectedRowKeys changed: ', newSelectedRowKeys);
         setSelectedRowKeys(newSelectedRowKeys);
     };
-    const rowSelection: TableRowSelection<Task> = {
+    const rowSelection: TableRowSelection<TaskUpdate> = {
         selectedRowKeys,
         onChange: onSelectChange,
 
         // onSelect: (record:Task)=>{handleTaskClick(record.taskId.toString())},
-        selections: [
-            Table.SELECTION_ALL,
-            Table.SELECTION_NONE,
-            {
-                key: 'odd',
-                text: 'select odd rows',
-                onSelect: (changeableRowkeys) => {
-                    let newRowKeys = []
-                    newRowKeys = changeableRowkeys.filter((_, index) => {
-                        if (index % 2 !== 0) {
-                            return false
-                        }
-                        return true
-                    });
-                    setSelectedRowKeys(newRowKeys)
-                }
-            },
-            {
-                key: 'even',
-                text: 'select even rows',
-                onSelect: (changeableRowkeys) => {
-                    let newRowKeys = []
-                    newRowKeys = changeableRowkeys.filter((_, index) => {
-                        if (index % 2 === 0) {
-                            return false
-                        }
-                        return true
-                    });
-                    setSelectedRowKeys(newRowKeys)
-                }
-            }
-        ],
     };
-    const columns: ColumnsType<Task> = [
+    const columns: ColumnsType<TaskUpdate> = [
+
         {
-            title: 'ID',
-            dataIndex: 'taskId',
-            render: (text: string, record: Task) => (
-                <a onClick={() => handleTaskClick(record.taskId.toString())}>{text}</a>
-            ),
-            fixed: 'left',
-            width: 100,
-            align: 'center',
-        },
-        {
-            title: 'Name',
-            dataIndex: 'taskUpdateTitle',
+            title: 'Title',
+            dataIndex: 'tkuTitle',
             fixed: 'left',
             width: 120,
             align: 'left',
@@ -119,7 +80,7 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks,yScroll,pageSize }) => {
         // },
         {
             title: 'Progress',
-            dataIndex: 'taskUpdateProgress',
+            dataIndex: 'tkuProgress',
             width: 150,
             align: 'left',
             key: 'taskProgress',
@@ -130,21 +91,22 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks,yScroll,pageSize }) => {
 
         {
             title: 'Created Date',
-            dataIndex: 'taskCreatedDate',
+            dataIndex: 'tkuCreatedDate',
             width: 150,
+            filtered: true,
             align: 'left',
             render: (date) => formatDate(date),
         },
         {
             title: 'Updated Date',
-            dataIndex: 'taskUpdatedDate',
+            dataIndex: 'tkuUpdatedDate',
             width: 150,
             align: 'left',
             render: (date) => formatDate(date),
         },
         {
             title: 'Details',
-            dataIndex: 'taskUpdateDescription',
+            dataIndex: 'tkuDescription',
             width: 200,
             ellipsis: true,
             render: (text) => (
@@ -155,17 +117,17 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks,yScroll,pageSize }) => {
         },
 
     ];
-    const getStatus = (progress:string) => {
-        if (+progress === 100) {
+    const getStatus = (progress:number) => {
+        if (progress === 100) {
             return 'success';
-        } else if (+progress > 70) {
+        } else if (progress > 70) {
             return 'active';
         } else {
             return 'exception';
         }
     };
     const formatDate = (date: string) => {
-        const newDate = new Date(date);
+        const newDate = new Date(date.split('T')[0]);
         return newDate.toLocaleDateString('en-GB', {
             weekday: 'short',
             day: 'numeric',
@@ -176,12 +138,12 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks,yScroll,pageSize }) => {
 
     return (
         <>
-            <Table<Task>
+            <Table<TaskUpdate>
                 onRow={(record) => {
                     return {
-                        onClick: () => handleTaskClick(record.taskId.toString()),
+                        onClick: () => handleTaskClick(record.taskUpdateTaskId_id.toString()),
                         onChange: () => {
-                            setSelectedRowKeys([record.taskId.toString()]);
+                            setSelectedRowKeys([record.taskUpdateTaskId_id.toString()]);
                         }
                     };
                 }}
@@ -198,6 +160,7 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks,yScroll,pageSize }) => {
                               isVisible={isModalVisible}
                               taskId={selectedTaskId}
                               onClose={handleModalCancel}
+                              refetchData={refetchData}
             />
         </>
     )
